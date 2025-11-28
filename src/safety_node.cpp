@@ -52,3 +52,24 @@ public:
         );
 
     }
+private:
+    //implement the callbacks for the subscribers here
+    // Pose of turtle1
+    void pose1_callback(const turtlesim::msg::Pose::SharedPtr msg)
+    {
+        x1_ = msg->x;
+        y1_ = msg->y;
+    }
+
+    // Pose of turtle2
+    void pose2_callback(const turtlesim::msg::Pose::SharedPtr msg)
+    {
+        x2_ = msg->x;
+        y2_ = msg->y;
+   }
+
+
+
+
+
+};
