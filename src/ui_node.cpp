@@ -6,8 +6,10 @@
 #include "rclcpp/rclcpp.hpp"              // rclcpp is the ros2 client library which includes all the commands
 #include "geometry_msgs/msg/twist.hpp"    // this is the msg type we aim to prep (cmd_vel)
 
+
 class UiNode : public rclcpp::Node     // inheriting from Node makes it a node
 {          // just need to have 2 publishers and no subscribed info is needed
+    
 public:    
     // def the constructor
     UiNode()                      // Const<- is public because we need to access it from outside                         
@@ -15,7 +17,7 @@ public:
     command_duration_(1.0)        // For how long
     {
         pub_turtle1_ = this->create_publisher<geometry_msgs::msg::Twist>(
-            "/turtle1/cmd_vel", 10);       // the first publisher (create_pub; specify_msg_type; topic_to_publish_to; que_size)
+            "/turtle1/cmd_vel", 10);       // create the first publisher (create_pub; specify_msg_type; topic_to_publish_to; que_size)
 
         pub_turtle2_ = this->create_publisher<geometry_msgs::msg::Twist>(
             "/turtle2/cmd_vel", 10);
@@ -24,8 +26,8 @@ public:
     // query user in a loop and fire the commander
     void run()    // returns nothing just fires the fires the commander
     {
-        char chosen_turtle     // prep a variable to hold the user input
-        double velocity
+        char chosen_turtle;     // prep a variable to hold the user input
+        double velocity;
         while (rclcpp::ok())
         {
             // First user input
@@ -53,13 +55,14 @@ public:
             }
 
             // call the function publishing 
-            send_vel_cmd(chosen_turtle, velocity,duration)
+            send_vel_cmd(chosen_turtle, velocity,command_duration_);
 
         }
 
     }
+private:
 
-    void send_velocity_for_duration(char turtle_choice,
+    void send_vel_cmd(char chosen_turtle,
                                     double velocity,
                                     double duration_seconds)
     {
@@ -85,30 +88,33 @@ public:
             }
 
             // Until the duration time elapses, publish by using the appropriate publisher depending on user choice
-            if (turtle_choice == '1') {
+            if (chosen_turtle == '1') {
                 pub_turtle1_->publish(cmd_msg);
-            } else if (turtle_choice == '2') {
+            } else if (chosen_turtle == '2') {
                 pub_turtle2_->publish(cmd_msg);
             }
 
-            std::this_thread::sleep_for(100ms);      //how often should this be done ? 100 ms approximates a 10 Hz control loop
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));     //how often should this be done ? 100 ms approximates a 10 Hz control loop
         }
 
         // after duration time elapses, Stop the turtle 
         cmd_msg.linear.x = 0.0;
         cmd_msg.angular.z = 0.0;
 
-        if (turtle_choice == '1') {
+        if (chosen_turtle == '1') {
             pub_turtle1_->publish(cmd_msg);
-        } else if (turtle_choice == '2') {
+        } else if (chosen_turtle == '2') {
             pub_turtle2_->publish(cmd_msg);
         }
+
     }
-
-
-
-
-
-}
+        
+        // Declare here in the private method
+        // the two publishers 
+        rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_turtle1_;
+        rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_turtle2_;
+        // 
+        double command_duration_; // seconds
+};
 
 
