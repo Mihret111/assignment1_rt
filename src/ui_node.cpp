@@ -117,4 +117,21 @@ private:
         double command_duration_; // seconds
 };
 
+// Add main
+int main(int argc, char * argv[])
+{
+    // Initialise ROS2 with the necessary args
+    rclcpp::init(argc, argv);
+
+    // Instantiate the ui_node class
+    auto node = std::make_shared<UiNode>();
+
+    // Run the UI loop to handles user_UI
+    node->run();
+
+    // Shutdown ROS2 when we exit the loop
+    rclcpp::shutdown();
+    return 0;
+}
+
 
