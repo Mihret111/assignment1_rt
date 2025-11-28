@@ -1,0 +1,10 @@
+[0.012s] Invoking command in '/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt -- -j16 -l16
+[0.105s] [ 50%] [32mBuilding CXX object CMakeFiles/ui_node.dir/src/ui_node.cpp.o[0m
+[2.570s] [100%] [32m[1mLinking CXX executable ui_node[0m
+[2.731s] /usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/Scrt1.o: in function `_start':
+[2.731s] (.text+0x1b): undefined reference to `main'
+[2.736s] collect2: error: ld returned 1 exit status
+[2.738s] gmake[2]: *** [CMakeFiles/ui_node.dir/build.make:178: ui_node] Error 1
+[2.739s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/ui_node.dir/all] Error 2
+[2.739s] gmake: *** [Makefile:146: all] Error 2
+[2.741s] Invoked command in '/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt -- -j16 -l16

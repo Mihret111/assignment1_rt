@@ -197,6 +197,43 @@ assignment1_rt_uninstall/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/assignment1_rt_uninstall.dir/build.make CMakeFiles/assignment1_rt_uninstall.dir/build
 .PHONY : assignment1_rt_uninstall/fast
 
+#=============================================================================
+# Target rules for targets named ui_node
+
+# Build rule for target.
+ui_node: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ui_node
+.PHONY : ui_node
+
+# fast build rule for target.
+ui_node/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ui_node.dir/build.make CMakeFiles/ui_node.dir/build
+.PHONY : ui_node/fast
+
+src/ui_node.o: src/ui_node.cpp.o
+.PHONY : src/ui_node.o
+
+# target to build an object file
+src/ui_node.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ui_node.dir/build.make CMakeFiles/ui_node.dir/src/ui_node.cpp.o
+.PHONY : src/ui_node.cpp.o
+
+src/ui_node.i: src/ui_node.cpp.i
+.PHONY : src/ui_node.i
+
+# target to preprocess a source file
+src/ui_node.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ui_node.dir/build.make CMakeFiles/ui_node.dir/src/ui_node.cpp.i
+.PHONY : src/ui_node.cpp.i
+
+src/ui_node.s: src/ui_node.cpp.s
+.PHONY : src/ui_node.s
+
+# target to generate assembly for a file
+src/ui_node.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ui_node.dir/build.make CMakeFiles/ui_node.dir/src/ui_node.cpp.s
+.PHONY : src/ui_node.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -212,6 +249,10 @@ help:
 	@echo "... test"
 	@echo "... assignment1_rt_uninstall"
 	@echo "... uninstall"
+	@echo "... ui_node"
+	@echo "... src/ui_node.o"
+	@echo "... src/ui_node.i"
+	@echo "... src/ui_node.s"
 .PHONY : help
 
 

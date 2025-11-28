@@ -1,3 +1,4 @@
+/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/install/assignment1_rt/lib/assignment1_rt/ui_node
 /home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/install/assignment1_rt/share/ament_index/resource_index/package_run_dependencies/assignment1_rt
 /home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/install/assignment1_rt/share/ament_index/resource_index/parent_prefix_path/assignment1_rt
 /home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/install/assignment1_rt/share/assignment1_rt/environment/ament_prefix_path.sh

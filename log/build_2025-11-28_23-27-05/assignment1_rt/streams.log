@@ -1,0 +1,10 @@
+[0.012s] Invoking command in '/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt -- -j16 -l16
+[0.139s] [ 50%] [32mBuilding CXX object CMakeFiles/ui_node.dir/src/ui_node.cpp.o[0m
+[1.947s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:[m[K In member function ‘[01m[Kvoid UiNode::[01;32m[Krun[m[K()[m[K’:
+[1.947s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:60:9:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[K}[m[K’ token
+[1.948s]    60 |         [01;31m[K}[m[K
+[1.948s]       |         [01;31m[K^[m[K
+[2.615s] gmake[2]: *** [CMakeFiles/ui_node.dir/build.make:76: CMakeFiles/ui_node.dir/src/ui_node.cpp.o] Error 1
+[2.615s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/ui_node.dir/all] Error 2
+[2.615s] gmake: *** [Makefile:146: all] Error 2
+[2.618s] Invoked command in '/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt -- -j16 -l16

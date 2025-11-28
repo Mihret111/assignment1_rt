@@ -1,0 +1,36 @@
+[0.012s] Invoking command in '/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt -- -j16 -l16
+[0.106s] [ 50%] [32mBuilding CXX object CMakeFiles/ui_node.dir/src/ui_node.cpp.o[0m
+[1.824s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:[m[K In constructor ‘[01m[KUiNode::[01;32m[KUiNode[m[K()[m[K’:
+[1.824s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:16:5:[m[K [01;31m[Kerror: [m[Kclass ‘[01m[KUiNode[m[K’ does not have any field named ‘[01m[Kcommand_duration_[m[K’
+[1.824s]    16 |     [01;31m[Kcommand_duration_[m[K(1.0)        // For how long
+[1.824s]       |     [01;31m[K^~~~~~~~~~~~~~~~~[m[K
+[1.830s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:18:9:[m[K [01;31m[Kerror: [m[K‘[01m[Kpub_turtle1_[m[K’ was not declared in this scope
+[1.830s]    18 |         [01;31m[Kpub_turtle1_[m[K = this->create_publisher<geometry_msgs::msg::Twist>(
+[1.830s]       |         [01;31m[K^~~~~~~~~~~~[m[K
+[1.839s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:21:9:[m[K [01;31m[Kerror: [m[K‘[01m[Kpub_turtle2_[m[K’ was not declared in this scope
+[1.839s]    21 |         [01;31m[Kpub_turtle2_[m[K = this->create_publisher<geometry_msgs::msg::Twist>(
+[1.839s]       |         [01;31m[K^~~~~~~~~~~~[m[K
+[1.839s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:[m[K In member function ‘[01m[Kvoid UiNode::[01;32m[Krun[m[K()[m[K’:
+[1.839s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:29:9:[m[K [01;31m[Kerror: [m[Kexpected initializer before ‘[01m[Kdouble[m[K’
+[1.839s]    29 |         [01;31m[Kdouble[m[K velocity
+[1.839s]       |         [01;31m[K^~~~~~[m[K
+[1.845s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:[m[K In member function ‘[01m[Kvoid UiNode::[01;32m[Ksend_velocity_for_duration[m[K(char, double, double)[m[K’:
+[1.845s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:91:17:[m[K [01;31m[Kerror: [m[K‘[01m[Kpub_turtle1_[m[K’ was not declared in this scope
+[1.845s]    91 |                 [01;31m[Kpub_turtle1_[m[K->publish(cmd_msg);
+[1.845s]       |                 [01;31m[K^~~~~~~~~~~~[m[K
+[1.851s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:93:17:[m[K [01;31m[Kerror: [m[K‘[01m[Kpub_turtle2_[m[K’ was not declared in this scope
+[1.851s]    93 |                 [01;31m[Kpub_turtle2_[m[K->publish(cmd_msg);
+[1.851s]       |                 [01;31m[K^~~~~~~~~~~~[m[K
+[1.851s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:96:41:[m[K [01;31m[Kerror: [m[Kunable to find numeric literal operator ‘[01m[Koperator""ms[m[K’
+[1.851s]    96 |             std::this_thread::sleep_for([01;31m[K100ms[m[K);      //how often should this be done ? 100 ms approximates a 10 Hz control loop
+[1.851s]       |                                         [01;31m[K^~~~~[m[K
+[1.856s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:104:13:[m[K [01;31m[Kerror: [m[K‘[01m[Kpub_turtle1_[m[K’ was not declared in this scope
+[1.856s]   104 |             [01;31m[Kpub_turtle1_[m[K->publish(cmd_msg);
+[1.856s]       |             [01;31m[K^~~~~~~~~~~~[m[K
+[1.861s] [01m[K/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/src/ui_node.cpp:106:13:[m[K [01;31m[Kerror: [m[K‘[01m[Kpub_turtle2_[m[K’ was not declared in this scope
+[1.861s]   106 |             [01;31m[Kpub_turtle2_[m[K->publish(cmd_msg);
+[1.861s]       |             [01;31m[K^~~~~~~~~~~~[m[K
+[2.544s] gmake[2]: *** [CMakeFiles/ui_node.dir/build.make:76: CMakeFiles/ui_node.dir/src/ui_node.cpp.o] Error 1
+[2.545s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/ui_node.dir/all] Error 2
+[2.545s] gmake: *** [Makefile:146: all] Error 2
+[2.548s] Invoked command in '/home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/mihret-k/Desktop/RE_1st/Research Track/Practice/ros2_ws/src/assignment1_rt/build/assignment1_rt -- -j16 -l16
