@@ -19,9 +19,10 @@ public:
     }
 
     // query user in a loop and fire the commander
-    void run()    // returns nth just fires the fires the commander
+    void run()    // returns nothing just fires the fires the commander
     {
-        char chosen_turtle// prep a variable to hold the user input
+        char chosen_turtle     // prep a variable to hold the user input
+        double velocity
         while (rclcpp::ok())
         {
             // First user input
@@ -34,7 +35,7 @@ public:
             break;
             }
 
-            if (turtle_choice != '1' && turtle_choice != '2') {
+            if (chosen_turtle != '1' && chosen_turtle!= '2') {
                 std::cout << "Invalid choice. Please, enter 1 or 2.\n";
             continue;
             }
@@ -48,6 +49,8 @@ public:
             break;
             }
 
+            // call the function publishing 
+            
         }
     }
 
