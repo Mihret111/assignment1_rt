@@ -1,4 +1,7 @@
 #include <iostream>
+#include <string>
+#include <chrono>
+#include <thread>
 
 #include "rclcpp/rclcpp.hpp"              // rclcpp is the ros2 client library which includes all the commands
 #include "geometry_msgs/msg/twist.hpp"    // this is the msg type we aim to prep (cmd_vel)
@@ -50,9 +53,58 @@ public:
             }
 
             // call the function publishing 
-            
+            send_vel_cmd(chosen_turtle, velocity,duration)
+
+        }
+
+    }
+
+    void send_velocity_for_duration(char turtle_choice,
+                                    double velocity,
+                                    double duration_seconds)
+    {
+        geometry_msgs::msg::Twist cmd_msg;
+
+        // Set forward linear velocity, and ensure that the others are kept zero
+        cmd_msg.linear.x  = velocity;
+        cmd_msg.linear.y  = 0.0;
+        cmd_msg.linear.z  = 0.0;
+        cmd_msg.angular.x = 0.0;
+        cmd_msg.angular.y = 0.0;
+        cmd_msg.angular.z = 0.0;
+
+        auto start = std::chrono::steady_clock::now();   // take the starting time stamp
+
+        while (rclcpp::ok()) {
+            auto current_time = std::chrono::steady_clock::now();   // each time in the loop, calc the elapsed time
+            std::chrono::duration<double> elapsed_time = current_time- start;
+
+            // after the duration has elapsed, leave the while loop intiating motion and stop turtle
+            if (elapsed_time.count() >= duration_seconds) {
+                break;
+            }
+
+            // Until the duration time elapses, publish by using the appropriate publisher depending on user choice
+            if (turtle_choice == '1') {
+                pub_turtle1_->publish(cmd_msg);
+            } else if (turtle_choice == '2') {
+                pub_turtle2_->publish(cmd_msg);
+            }
+
+            std::this_thread::sleep_for(100ms);      //how often should this be done ? 100 ms approximates a 10 Hz control loop
+        }
+
+        // after duration time elapses, Stop the turtle 
+        cmd_msg.linear.x = 0.0;
+        cmd_msg.angular.z = 0.0;
+
+        if (turtle_choice == '1') {
+            pub_turtle1_->publish(cmd_msg);
+        } else if (turtle_choice == '2') {
+            pub_turtle2_->publish(cmd_msg);
         }
     }
+
 
 
 
