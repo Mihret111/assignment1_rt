@@ -32,21 +32,28 @@ public:
         {
             // First user input
             std::cout<< "Which turtle do you want ot move?\n"
-            << "Enter 1 or 2 ";      // ** later distinguish from the two after spawning and visualizing
+            << "Enter '1' or '2' to move a turtle or 'q' to quit:  ";      // ** later distinguish from the two after spawning and visualizing
             std::cin>> chosen_turtle;    // checks is there is an error with the standard input stream
 
-            if (!std::cin.good()) {
+            if (!std::cin.good()) {       // ctrl+C also leads to here
                 std::cout << "Input error. Exiting application.\n";
             break;
             }
 
+            // If user wants to quit, quit    
+            if (chosen_turtle  == 'q' || chosen_turtle  == 'Q') {
+                std::cout << "Quitting application...\n";
+            break;
+            }
+
             if (chosen_turtle != '1' && chosen_turtle!= '2') {
-                std::cout << "Invalid choice. Please, enter 1 or 2.\n";
+                std::cout << "Invalid choice.\n"
+                << "Please, enter '1' or '2' to move a turtle or 'q' to quit:  \n";
             continue;
             }
 
             //Second user input
-            std::cout << "Enter the desired linear velocity: ";
+            std::cout << "Enter the desired linear velocity:  ";
             std::cin >> velocity;
 
             if (!std::cin.good()) {
