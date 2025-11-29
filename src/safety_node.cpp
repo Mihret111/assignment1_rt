@@ -3,7 +3,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "turtlesim/msg/pose.hpp"      // msg to retrieve pose of each from
 #include "geometry_msgs/msg/twist.hpp"    // msg type to stop each incase of dangerous condition
-#include "std_msgs/msg/float32.hpp"       // to send the distance value   
+#include "std_msgs/msg/float32.hpp"       // to send the distance value   (if needed later)
 
 // Needed for std::bind to connect callbacks to subscribers/timers
 using std::placeholders::_1;
@@ -15,7 +15,7 @@ public:
     : rclcpp::Node("safety_node"),  // Node name inside the ROS graph
     // default val for the vars
     dist_threshold_(1.0),          // minimum allowed distance between turtles
-    border_threshold(0.5);        // minimum allowed distance to boundary
+    border_threshold(0.5),        // minimum allowed distance to boundary
     // def oundary of the the safe exploration area
     wall_min_(1.0),                // inner boundary in turtlesim world
     wall_max_(10.0)                // outer boundary in turtlesim world
@@ -139,3 +139,17 @@ private:
 
 
 };
+
+// Add main to initializes ROS, instantiate safety_node and then let the callback funcs run
+int main(int argc, char * argv[])
+{
+    rclcpp::init(argc, argv);
+
+    auto node = std::make_shared<SafetyNode>();
+
+    // rclcpp::spin() blocks and processes callbacks (ie: the subscribers and the timers)
+    rclcpp::spin(node);
+
+    rclcpp::shutdown();
+    return 0;
+}
