@@ -12,12 +12,17 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(turtlesim REQUIRED)
+find_package(std_msgs REQUIRED)
 
 add_executable(ui_node src/ui_node.cpp)
 ament_target_dependencies(ui_node rclcpp geometry_msgs)
+add_executable(safety_node src/safety_node.cpp)
+ament_target_dependencies(safety_node rclcpp geometry_msgs turtlesim std_msgs)
 
 install(TARGETS
   ui_node
+  safety_node
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
