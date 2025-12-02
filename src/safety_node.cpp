@@ -17,7 +17,7 @@ public:
     have_cmd2_(false),
     // default val for the vars
     dist_threshold_(1.5),          // minimum allowed distance between turtles
-    border_threshold(0.5),        // minimum allowed distance to boundary
+    border_threshold(0.1),        // minimum allowed distance to boundary
     // def oundary of the the safe exploration area
     wall_min_(1.0),                // inner boundary in turtlesim world
     wall_max_(10.0)                // outer boundary in turtlesim world
@@ -85,7 +85,7 @@ private:
     {
         x2_ = msg->x;
         y2_ = msg->y;
-        theta_2 = msg-> theta;
+        theta2_ = msg-> theta;
     }
 
     // UI command callbacks 
@@ -169,34 +169,85 @@ private:
                                     d, rv_dot);
             }
         } 
-            // Safety against boundary  
+        // Safety against boundary  
         // how close to the safe [wall_min_, wall_max_] boundary for either x or y.
+        
+        //Turtlle-1
+        // Components of the commanded vel in x and y
+        // Approx approximate world velocity of turtle1
+        double v1x = last_cmd_t1_.linear.x * std::cos(theta1_);
+        double v1y = last_cmd_t1_.linear.x * std::sin(theta1_);
+    
+        double dx_min = std::abs(x1_ - wall_min_);
+        double dx_max = std::abs(x1_ - wall_max_);
+        double dy_min = std::abs(y1_ - wall_min_);
+        double dy_max = std::abs(y1_ - wall_max_);
+        
+        bool t1_too_close_to_boundary = (std::min({dx_min, dx_max, dy_min, dy_max}) < border_threshold);
 
-        bool t1_too_close_to_boundary =
-            (std::abs(x1_ - wall_min_) < border_threshold) ||
-            (std::abs(x1_ - wall_max_) < border_threshold) ||
-            (std::abs(y1_ - wall_min_) < border_threshold) ||
-            (std::abs(y1_ - wall_max_) < border_threshold);
+        if (t1_too_close_to_boundary) {
+            // check if cmd is forcing to push out more to the boundary
+            bool pushing_outward =
+                ((dx_min < border_threshold)&& v1x < 0.0) ||   // already left, moving further left
+                ((dx_max < border_threshold) && v1x > 0.0) ||   // already right, moving further right
+                ((dy_min < border_threshold) && v1y < 0.0) ||   // already bottom, moving further down
+                ((dy_max < border_threshold) && v1y > 0.0);     // already top, moving further up
 
-        bool t2_too_close_to_boundary =
+            if (pushing_outward){
+
+                RCLCPP_WARN(this->get_logger(),
+                "Turtle1 near boundary: x=%.2f, y=%.2f and command pushes further out. Stopping.",
+                x1_, y1_);
+                make_zero(safe_cmd1);
+            }
+            else {
+                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
+                                     2000,
+                                     "Turtle1 near boundary (x=%.2f, y=%.2f) but command "
+                                     "points inward. Allowing motion.",
+                                     x1_, y1_);
+            }
+        }
+
+            //Turtlle-2
+        // Components of the commanded vel in x and y
+        // Approx approximate world velocity of turtle1
+        double v2x = last_cmd_t2_.linear.x * std::cos(theta2_);
+        double v2y = last_cmd_t2_.linear.x * std::sin(theta2_);
+
+        dx_min = std::abs(x2_ - wall_min_);
+        dx_max = std::abs(x2_ - wall_max_);
+        dy_min = std::abs(y2_ - wall_min_);
+        dy_max = std::abs(y2_ - wall_max_);
+        
+        bool t2_too_close_to_boundary = (std::min({dx_min, dx_max, dy_min, dy_max}) < border_threshold);
+
+/*         bool t2_too_close_to_boundary =
             (std::abs(x2_ - wall_min_) < border_threshold) ||
             (std::abs(x2_ - wall_max_) < border_threshold) ||
             (std::abs(y2_ - wall_min_) < border_threshold) ||
-            (std::abs(y2_ - wall_max_) < border_threshold);
+            (std::abs(y2_ - wall_max_) < border_threshold); */
 
-
-            if (t1_too_close_to_boundary) {
-                RCLCPP_WARN(this->get_logger(),
-                            "Turtle1 near boundary: x=%.2f, y=%.2f. Stopping.",
-                            x1_, y1_);
-                make_zero(safe_cmd1);
-            }
-            if (t2_too_close_to_boundary) {
+        if (t2_too_close_to_boundary) {
+            // check if cmd is forcing to push out more to the boundary
+            bool pushing_outward =
+                ((dx_min < border_threshold) && v2x < 0.0) ||   // already left, moving further left
+                ((dx_max < border_threshold) && v2x > 0.0) ||   // already right, moving further right
+                ((dy_min < border_threshold) && v2y < 0.0) ||   // already bottom, moving further down
+                ((dy_max < border_threshold) && v2y > 0.0);     // already top, moving further up
+            if (pushing_outward){
                 RCLCPP_WARN(this->get_logger(),
                             "Turtle2 near boundary: x=%.2f, y=%.2f. Stopping.",
                             x2_, y2_);
-                make_zero(safe_cmd2);
-            }
+                make_zero(safe_cmd2);}
+            else {
+                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
+                                    2000,
+                                    "Turtle2 near boundary (x=%.2f, y=%.2f) but command "
+                                    "points inward. Allowing motion.",
+                                    x2_, y2_);
+                }
+        }
             // Send stop command to both turtles. It is like freezing everything if unsafe
             // ** if time available, implement smart stopping than just stopping both
 
@@ -228,8 +279,8 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
 
     // Stored pose information
-    double x1_, y1_;
-    double x2_, y2_;
+    double x1_, y1_, theta1_;
+    double x2_, y2_, theta2_;
 
     // Last desired commands from UI
     geometry_msgs::msg::Twist last_cmd_t1_;
