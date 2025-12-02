@@ -17,10 +17,10 @@ public:
     command_duration_(1.0)        // For how long
     {
         pub_turtle1_ = this->create_publisher<geometry_msgs::msg::Twist>(
-            "/turtle1/cmd_vel", 10);       // create the first publisher (create_pub; specify_msg_type; topic_to_publish_to; que_size)
+            "/turtle1/ui_cmd_vel", 10);       // create the first publisher (create_pub; specify_msg_type; topic_to_publish_to; que_size)
 
         pub_turtle2_ = this->create_publisher<geometry_msgs::msg::Twist>(
-            "/turtle2/cmd_vel", 10);
+            "/turtle2/ui_cmd_vel", 10);
     }
 
     // query user in a loop and fire the commander
@@ -145,7 +145,7 @@ private:
                 pub_turtle2_->publish(cmd_msg);
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));     //how often should this be done ? 100 ms approximates a 10 Hz control loop
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));     //how often should this be done ? 100 ms approximates a 10 Hz control loop
         }
 
         // after duration time elapses, Stop the turtle 

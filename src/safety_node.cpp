@@ -13,8 +13,10 @@ class SafetyNode : public rclcpp::Node
 public:
     SafetyNode()
     : rclcpp::Node("safety_node"),  // Node name inside the ROS graph
+    have_cmd1_(false),              // true, if user cmd(from UI_node) becomes available
+    have_cmd2_(false),
     // default val for the vars
-    dist_threshold_(1.0),          // minimum allowed distance between turtles
+    dist_threshold_(1.5),          // minimum allowed distance between turtles
     border_threshold(0.5),        // minimum allowed distance to boundary
     // def oundary of the the safe exploration area
     wall_min_(1.0),                // inner boundary in turtlesim world
@@ -33,13 +35,24 @@ public:
             std::bind(&SafetyNode::pose2_callback, this, _1)
         );
 
+        // UI command subscribers  (user-desired commands from UiNode)
+        sub_t1_ui_cmd_ = this->create_subscription<geometry_msgs::msg::Twist>(
+            "/turtle1/ui_cmd_vel", 10,
+            std::bind(&SafetyNode::ui_cmd1_callback, this, _1)
+        );
+
+        sub_t2_ui_cmd_ = this->create_subscription<geometry_msgs::msg::Twist>(
+            "/turtle2/ui_cmd_vel", 10,
+            std::bind(&SafetyNode::ui_cmd2_callback, this, _1)
+        );
+
         // distance b/n turtles publisher : to be used for monitoring 
         pub_distance_ = this->create_publisher<std_msgs::msg::Float32>(
             "/turtles_distance",
             10
         );
 
-        // Cmd_vel publishers (to override normal vel while in danger)
+        // Cmd_vel publishers (the only one turtlesim sees)
         pub_t1_cmd_ = this->create_publisher<geometry_msgs::msg::Twist>(
             "/turtle1/cmd_vel", 10);
 
@@ -47,12 +60,11 @@ public:
             "/turtle2/cmd_vel", 10);
 
         // callbacks needed
-        
         // pose callbacks - to update the pos state with the most recent one published in the topic
         // timer callback - to read that state and perform safety actions
 
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(100),   // a period of 0.1s
+            std::chrono::milliseconds(50),   // a period of 0.02s, control loop: 20 Hz
             std::bind(&SafetyNode::ensure_safety, this)
         );
 
@@ -73,8 +85,30 @@ private:
         y2_ = msg->y;
     }
 
+    // UI command callbacks 
+    void ui_cmd1_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
+    {
+        last_cmd_t1_ = *msg;
+        have_cmd1_ = true;
+    }
+
+    void ui_cmd2_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
+    {
+        last_cmd_t2_ = *msg;
+        have_cmd2_ = true;
+    }
+
     void ensure_safety()        // Called periodically (It is like a 10 Hz control loop)
     {
+        // Need at least some commands
+        // This assumes an intially safe position of the turtles
+        //TODO: So need to ensure that the spawner doesn't violate this
+
+        if (!have_cmd1_ && !have_cmd2_) {   
+            // if both cmd is not available, then
+            // nothing to send to the tutles
+            return;
+        }
         // Compute distance between turtles d = sqrt( (x1 - x2)^2 + (y1 - y2)^2 )
         double dx = x1_ - x2_;
         double dy = y1_ - y2_;
@@ -103,39 +137,52 @@ private:
             (std::abs(y2_ - wall_min_) < border_threshold) ||
             (std::abs(y2_ - wall_max_) < border_threshold);
 
+         // First assign the desired commands from UI_node as safe cmd(subjected to test later)
+        geometry_msgs::msg::Twist safe_cmd1 = last_cmd_t1_;
+        geometry_msgs::msg::Twist safe_cmd2 = last_cmd_t2_;
+
+        // A lambda expression to set twist to zero :to be used for unsafe encounters
+        auto make_zero = [](geometry_msgs::msg::Twist & msg){
+            msg.linear.x  = 0.0;
+            msg.linear.y  = 0.0;
+            msg.linear.z  = 0.0;
+            msg.angular.x = 0.0;
+            msg.angular.y = 0.0;
+            msg.angular.z = 0.0;
+        };
 
         // decide if stopping the turtles is necessary
-        if (too_close_to_each_other || t1_too_close_to_boundary || t2_too_close_to_boundary) {
-            // Build zero velocity STOP command
-            geometry_msgs::msg::Twist stop_msg;
-            stop_msg.linear.x  = 0.0;
-            stop_msg.linear.y  = 0.0;
-            stop_msg.linear.z  = 0.0;
-            stop_msg.angular.x = 0.0;
-            stop_msg.angular.y = 0.0;
-            stop_msg.angular.z = 0.0;
-
             // Log WHY we are stopping (for debugging)
             if (too_close_to_each_other) {
                 RCLCPP_WARN(this->get_logger(),
                             "Turtles too close: d = %.2f < %.2f. Stopping both.",
-                            d, dist_threshold_);
+                            d, dist_threshold_);   
+                make_zero(safe_cmd1);
+                make_zero(safe_cmd2); 
             }
             if (t1_too_close_to_boundary) {
                 RCLCPP_WARN(this->get_logger(),
                             "Turtle1 near boundary: x=%.2f, y=%.2f. Stopping.",
                             x1_, y1_);
+                make_zero(safe_cmd1);
             }
             if (t2_too_close_to_boundary) {
                 RCLCPP_WARN(this->get_logger(),
                             "Turtle2 near boundary: x=%.2f, y=%.2f. Stopping.",
                             x2_, y2_);
+                make_zero(safe_cmd2);
             }
             // Send stop command to both turtles. It is like freezing everything if unsafe
             // ** if time available, implement smart stopping than just stopping both
-            pub_t1_cmd_->publish(stop_msg);
-            pub_t2_cmd_->publish(stop_msg);
-        }
+
+            // Publish final safe commands to turtles
+            if (have_cmd1_) {
+                pub_t1_cmd_->publish(safe_cmd1);
+            }
+            if (have_cmd2_) {
+                pub_t2_cmd_->publish(safe_cmd2);
+            }
+        
     }
 
     // define the member variables 
@@ -143,6 +190,9 @@ private:
     // Subscribers: to the turtles' positions
     rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr sub_t1_pose_;
     rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr sub_t2_pose_;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_t1_ui_cmd_;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_t2_ui_cmd_;
+
 
     // Publishers: overriding velocity commands to stop the robots
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_distance_;    // distance information
@@ -156,15 +206,17 @@ private:
     double x1_, y1_;
     double x2_, y2_;
 
+    // Last desired commands from UI
+    geometry_msgs::msg::Twist last_cmd_t1_;
+    geometry_msgs::msg::Twist last_cmd_t2_;
+    bool have_cmd1_;
+    bool have_cmd2_;
+
     // Safety parameters 
     double dist_threshold_;   // minimum allowed distance between turtles
     double border_threshold;  // minimum allowed distance to boundary
     double wall_min_;         // safe zone
     double wall_max_;         
-
-
-
-
 
 };
 
