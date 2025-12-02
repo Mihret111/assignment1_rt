@@ -33,6 +33,12 @@ public:
             std::bind(&SafetyNode::pose2_callback, this, _1)
         );
 
+        // distance b/n turtles publisher : to be used for monitoring 
+        pub_distance_ = this->create_publisher<std_msgs::msg::Float32>(
+            "/turtles_distance",
+            10
+        );
+
         // Cmd_vel publishers (to override normal vel while in danger)
         pub_t1_cmd_ = this->create_publisher<geometry_msgs::msg::Twist>(
             "/turtle1/cmd_vel", 10);
@@ -73,6 +79,11 @@ private:
         double dx = x1_ - x2_;
         double dy = y1_ - y2_;
         double d  = std::sqrt(dx * dx + dy * dy);
+
+        // distance msg for monitoring
+        std_msgs::msg::Float32 d_msg;
+        d_msg.data = static_cast<float>(d);
+        pub_distance_->publish(d_msg);     // publish
 
         // Perform the safety checks
         // distance between each other
@@ -134,6 +145,7 @@ private:
     rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr sub_t2_pose_;
 
     // Publishers: overriding velocity commands to stop the robots
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_distance_;    // distance information
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_t1_cmd_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_t2_cmd_;
 
