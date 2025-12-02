@@ -169,7 +169,7 @@ private:
                     make_zero(safe_cmd2); 
                 }
                 else{
-                    RCLCPP_INFO_ONCE(this->get_logger(),
+                    RCLCPP_INFO_THROTTLE(this->get_logger(),
                                         "Too close (d=%.2f), but commands move them apart "
                                         "(rv_dot=%.3f). Allowing escape.",
                                         d, rv_dot);
