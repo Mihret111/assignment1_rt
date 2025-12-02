@@ -61,6 +61,13 @@ public:
             break;
             }
 
+            // Logger to check the applied command  and the user choise
+            RCLCPP_INFO(this->get_logger(),
+                        "UI: turtle%s, v = %.2f for %.1f s",
+                        (turtle_choice == '1') ? "1" : "2",
+                        velocity,
+                        command_duration_);
+
             // call the function publishing 
             send_vel_cmd(chosen_turtle, velocity,command_duration_);
 
@@ -113,6 +120,10 @@ private:
         } else if (chosen_turtle == '2') {
             pub_turtle2_->publish(cmd_msg);
         }
+
+        RCLCPP_INFO(this->get_logger(),
+                    "1 sec command finished. Turtle%s stopped.",
+                    (turtle_choice == '1') ? "1" : "2");
 
     }
         

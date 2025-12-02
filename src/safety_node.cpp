@@ -104,6 +104,22 @@ private:
             stop_msg.angular.y = 0.0;
             stop_msg.angular.z = 0.0;
 
+            // Log WHY we are stopping (for debugging)
+            if (too_close_to_each_other) {
+                RCLCPP_WARN(this->get_logger(),
+                            "Turtles too close: d = %.2f < %.2f. Stopping both.",
+                            d, dist_threshold_);
+            }
+            if (t1_too_close_to_boundary) {
+                RCLCPP_WARN(this->get_logger(),
+                            "Turtle1 near boundary: x=%.2f, y=%.2f. Stopping.",
+                            x1_, y1_);
+            }
+            if (t2_too_close_to_boundary) {
+                RCLCPP_WARN(this->get_logger(),
+                            "Turtle2 near boundary: x=%.2f, y=%.2f. Stopping.",
+                            x2_, y2_);
+            }
             // Send stop command to both turtles. It is like freezing everything if unsafe
             // ** if time available, implement smart stopping than just stopping both
             pub_t1_cmd_->publish(stop_msg);
