@@ -27,13 +27,23 @@ public:
     void run()    // returns nothing just fires the fires the commander
     {
         char chosen_turtle;     // prep a variable to hold the user input
-        double velocity;
+        double linear_vel;
+        double angular_vel;
         while (rclcpp::ok())
         {
             // First user input
-            std::cout<< "Which turtle do you want ot move?\n"
-            << "Enter '1' or '2' to move a turtle or 'q' to quit:  ";      // ** later distinguish from the two after spawning and visualizing
-            std::cin>> chosen_turtle;    // checks is there is an error with the standard input stream
+            // Ask which turtle to move
+            std::cout << "\n======================================\n";
+            std::cout << "           🐢 Turtle Selector\n";
+            std::cout << "======================================\n";
+            std::cout << "Which turtle do you want to control?\n";
+            std::cout << "  ➤ Enter '1' for Turtle 1\n";
+            std::cout << "  ➤ Enter '2' for Turtle 2\n";
+            std::cout << "  ➤ Enter 'q' to quit\n";
+            std::cout << "--------------------------------------\n";
+            std::cout << "Your choice: ";
+            std::cin >> chosen_turtle;
+             // checks is there is an error with the standard input stream
 
             if (!std::cin.good()) {       // ctrl+C also leads to here
                 std::cout << "Input error. Exiting application.\n";
@@ -51,10 +61,36 @@ public:
                 << "Please, enter '1' or '2' to move a turtle or 'q' to quit:  \n";
             continue;
             }
+            // Ask for linear velocity 
+            std::cout << "\n======================================\n";
+            std::cout << "        🚀 Linear Velocity Input\n";
+            std::cout << "======================================\n";
+            std::cout << "Enter linear velocity (m/s):\n";
+            std::cout << "  ➤ Positive  = forward\n";
+            std::cout << "  ➤ Negative  = backward\n";
+            std::cout << "Examples:  1.0   -2.0    0\n";
+            std::cout << "--------------------------------------\n";
+            std::cout << "Linear velocity: ";
+            std::cin >> linear_vel;
 
-            //Second user input
-            std::cout << "Enter the desired linear velocity:  ";
-            std::cin >> velocity;
+            if (!std::cin.good()) {
+                std::cout << "Invalid linear velocity input. Exiting.\n";
+                break;
+            }
+
+            // Ask for angular velocity 
+            std::cout << "\n======================================\n";
+            std::cout << "        🔁 Angular Velocity Input\n";
+            std::cout << "======================================\n";
+            std::cout << "Enter angular velocity (rad/s):\n";
+            std::cout << "  ➤ Positive  = turn left\n";
+            std::cout << "  ➤ Negative  = turn right\n";
+            std::cout << "Examples:  1.0   -1.5    0\n";
+            std::cout << "--------------------------------------\n";
+            std::cout << "Angular velocity: ";
+            std::cin >> angular_vel;
+
+            std::cout << "\n✨ Command received! Executing...\n\n";
 
             if (!std::cin.good()) {
                 std::cout << "Invalid input. Exiting application.\n";
@@ -63,13 +99,14 @@ public:
 
             // Logger to check the applied command  and the user choise
             RCLCPP_INFO(this->get_logger(),
-                        "UI: turtle%s, v = %.2f for %.1f s",
-                        (turtle_choice == '1') ? "1" : "2",
-                        velocity,
+                        "UI: turtle%s, linear v = %.2f, angular v=%.2f for %.1f s",
+                        (chosen_turtle == '1') ? "1" : "2",
+                        linear_vel,
+                        angular_vel,
                         command_duration_);
 
             // call the function publishing 
-            send_vel_cmd(chosen_turtle, velocity,command_duration_);
+            send_vel_cmd(chosen_turtle, linear_vel, angular_vel, command_duration_);
 
         }
 
@@ -77,18 +114,18 @@ public:
 private:
 
     void send_vel_cmd(char chosen_turtle,
-                                    double velocity,
+                                    double linear_vel, double angular_vel,
                                     double duration_seconds)
     {
         geometry_msgs::msg::Twist cmd_msg;
 
         // Set forward linear velocity, and ensure that the others are kept zero
-        cmd_msg.linear.x  = velocity;
+        cmd_msg.linear.x  = linear_vel;
         cmd_msg.linear.y  = 0.0;
         cmd_msg.linear.z  = 0.0;
         cmd_msg.angular.x = 0.0;
         cmd_msg.angular.y = 0.0;
-        cmd_msg.angular.z = 0.0;
+        cmd_msg.angular.z = angular_vel ;
 
         auto start = std::chrono::steady_clock::now();   // take the starting time stamp
 
@@ -123,7 +160,7 @@ private:
 
         RCLCPP_INFO(this->get_logger(),
                     "1 sec command finished. Turtle%s stopped.",
-                    (turtle_choice == '1') ? "1" : "2");
+                    (chosen_turtle == '1') ? "1" : "2");
 
     }
         
