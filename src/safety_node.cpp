@@ -76,6 +76,8 @@ private:
     {
         x1_ = msg->x;
         y1_ = msg->y;
+        //retrieve the heading angle theta: later used to deside safety along with rel velocity
+        theta1_ = msg->theta;
     }
 
     // Pose of turtle2
@@ -83,6 +85,7 @@ private:
     {
         x2_ = msg->x;
         y2_ = msg->y;
+        theta_2 = msg-> theta;
     }
 
     // UI command callbacks 
@@ -119,25 +122,7 @@ private:
         d_msg.data = static_cast<float>(d);
         pub_distance_->publish(d_msg);     // publish
 
-        // Perform the safety checks
-        // distance between each other
-        bool too_close_to_each_other = (d < dist_threshold_);
-
-        // how close to the safe [wall_min_, wall_max_] boundary for either x or y.
-
-        bool t1_too_close_to_boundary =
-            (std::abs(x1_ - wall_min_) < border_threshold) ||
-            (std::abs(x1_ - wall_max_) < border_threshold) ||
-            (std::abs(y1_ - wall_min_) < border_threshold) ||
-            (std::abs(y1_ - wall_max_) < border_threshold);
-
-        bool t2_too_close_to_boundary =
-            (std::abs(x2_ - wall_min_) < border_threshold) ||
-            (std::abs(x2_ - wall_max_) < border_threshold) ||
-            (std::abs(y2_ - wall_min_) < border_threshold) ||
-            (std::abs(y2_ - wall_max_) < border_threshold);
-
-         // First assign the desired commands from UI_node as safe cmd(subjected to test later)
+        // First assign the desired commands from UI_node as safe cmd(subjected to test later)
         geometry_msgs::msg::Twist safe_cmd1 = last_cmd_t1_;
         geometry_msgs::msg::Twist safe_cmd2 = last_cmd_t2_;
 
@@ -153,13 +138,53 @@ private:
 
         // decide if stopping the turtles is necessary
             // Log WHY we are stopping (for debugging)
-            if (too_close_to_each_other) {
+
+        // Perform the safety checks
+        // distance between each other
+        bool too_close_to_each_other = (d < dist_threshold_);
+        if (too_close_to_each_other) {
+            // Approximate world velocities from linear.x along heading
+            double v1x = last_cmd_t1_.linear.x * std::cos(theta1_);
+            double v1y = last_cmd_t1_.linear.x * std::sin(theta1_);
+            double v2x = last_cmd_t2_.linear.x * std::cos(theta2_);
+            double v2y = last_cmd_t2_.linear.x * std::sin(theta2_);
+
+            // Relative position & velocity
+            double rv_dot = dx * (v1x - v2x) + dy * (v1y - v2y);
+
+            // rv_dot < 0  -> moving closer
+            // rv_dot > 0  -> moving apart
+            if (rv_dot < 0.0) {
                 RCLCPP_WARN(this->get_logger(),
                             "Turtles too close: d = %.2f < %.2f. Stopping both.",
                             d, dist_threshold_);   
                 make_zero(safe_cmd1);
                 make_zero(safe_cmd2); 
             }
+            else{
+                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
+                                    2000,
+                                    "Too close (d=%.2f) but commands move them apart "
+                                    "(rv_dot=%.3f). Allowing escape.",
+                                    d, rv_dot);
+            }
+        } 
+            // Safety against boundary  
+        // how close to the safe [wall_min_, wall_max_] boundary for either x or y.
+
+        bool t1_too_close_to_boundary =
+            (std::abs(x1_ - wall_min_) < border_threshold) ||
+            (std::abs(x1_ - wall_max_) < border_threshold) ||
+            (std::abs(y1_ - wall_min_) < border_threshold) ||
+            (std::abs(y1_ - wall_max_) < border_threshold);
+
+        bool t2_too_close_to_boundary =
+            (std::abs(x2_ - wall_min_) < border_threshold) ||
+            (std::abs(x2_ - wall_max_) < border_threshold) ||
+            (std::abs(y2_ - wall_min_) < border_threshold) ||
+            (std::abs(y2_ - wall_max_) < border_threshold);
+
+
             if (t1_too_close_to_boundary) {
                 RCLCPP_WARN(this->get_logger(),
                             "Turtle1 near boundary: x=%.2f, y=%.2f. Stopping.",
