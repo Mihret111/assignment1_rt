@@ -162,9 +162,8 @@ private:
                 make_zero(safe_cmd2); 
             }
             else{
-                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
-                                    2000,
-                                    "Too close (d=%.2f) but commands move them apart "
+                RCLCPP_INFO_ONCE(this->get_logger(),
+                                    "Turtles too close (d=%.2f) but commands move them apart "
                                     "(rv_dot=%.3f). Allowing escape.",
                                     d, rv_dot);
             }
@@ -201,9 +200,8 @@ private:
                 make_zero(safe_cmd1);
             }
             else {
-                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
-                                     2000,
-                                     "Turtle1 near boundary (x=%.2f, y=%.2f) but command "
+                RCLCPP_INFO_ONCE(this->get_logger(), 
+                                    "Turtle1 near boundary (x=%.2f, y=%.2f) but command "
                                      "points inward. Allowing motion.",
                                      x1_, y1_);
             }
@@ -241,8 +239,7 @@ private:
                             x2_, y2_);
                 make_zero(safe_cmd2);}
             else {
-                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
-                                    2000,
+                RCLCPP_INFO_ONCE(this->get_logger(),
                                     "Turtle2 near boundary (x=%.2f, y=%.2f) but command "
                                     "points inward. Allowing motion.",
                                     x2_, y2_);

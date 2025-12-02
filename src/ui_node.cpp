@@ -57,8 +57,7 @@ public:
             }
 
             if (chosen_turtle != '1' && chosen_turtle!= '2') {
-                std::cout << "Invalid choice.\n"
-                << "Please, enter '1' or '2' to move a turtle or 'q' to quit:  \n";
+                std::cout << "Invalid choice. Please enter a valid choise.\n";
             continue;
             }
             // Ask for linear velocity 
