@@ -149,26 +149,33 @@ private:
             double v2x = last_cmd_t2_.linear.x * std::cos(theta2_);
             double v2y = last_cmd_t2_.linear.x * std::sin(theta2_);
 
-            // Relative position & velocity
-            double rv_dot = dx * (v1x - v2x) + dy * (v1y - v2y);
+            // If there is essentially no commanded motion, don't put logs
+            double speed_norm = std::fabs(last_cmd_t1_.linear.x) + std::fabs(last_cmd_t2_.linear.x);
+            const double EPS = 1e-3;
+            if (speed_norm < EPS) {
+                // No active motion command: just stay as we are, no "allowing escape" noise.
+                // (safe_cmd1/2 already inherit zero or last_cmd)   
+            } else {
+                // Relative position & velocity
+                double rv_dot = dx * (v1x - v2x) + dy * (v1y - v2y);
 
-            // rv_dot < 0  -> moving closer
-            // rv_dot > 0  -> moving apart
-            if (rv_dot < 0.0) {
-                RCLCPP_WARN(this->get_logger(),
-                            "Turtles too close: d = %.2f < %.2f. Stopping both.",
-                            d, dist_threshold_);   
-                make_zero(safe_cmd1);
-                make_zero(safe_cmd2); 
+                // rv_dot < 0  -> moving closer
+                // rv_dot > 0  -> moving apart
+                if (rv_dot < 0.0) {
+                    RCLCPP_WARN(this->get_logger(),
+                                "Turtles too close: d = %.2f < %.2f. Stopping both.",
+                                d, dist_threshold_);   
+                    make_zero(safe_cmd1);
+                    make_zero(safe_cmd2); 
+                }
+                else{
+                    RCLCPP_INFO_ONCE(this->get_logger(),
+                                        "Too close (d=%.2f), but commands move them apart "
+                                        "(rv_dot=%.3f). Allowing escape.",
+                                        d, rv_dot);
+                }
             }
-            else{
-                RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
-                                    2000,
-                                    "Too close (d=%.2f) but commands move them apart "
-                                    "(rv_dot=%.3f). Allowing escape.",
-                                    d, rv_dot);
-            }
-        } 
+    } 
         // Safety against boundary  
         // how close to the safe [wall_min_, wall_max_] boundary for either x or y.
         
@@ -186,6 +193,9 @@ private:
         bool t1_too_close_to_boundary = (std::min({dx_min, dx_max, dy_min, dy_max}) < border_threshold);
 
         if (t1_too_close_to_boundary) {
+            // how "strong" is the motion command?
+            double speed1 = std::fabs(last_cmd_t1_.linear.x);
+            const double EPS = 1e-3;
             // check if cmd is forcing to push out more to the boundary
             bool pushing_outward =
                 ((dx_min < border_threshold)&& v1x < 0.0) ||   // already left, moving further left
@@ -193,20 +203,21 @@ private:
                 ((dy_min < border_threshold) && v1y < 0.0) ||   // already bottom, moving further down
                 ((dy_max < border_threshold) && v1y > 0.0);     // already top, moving further up
 
-            if (pushing_outward){
+            if (pushing_outward && speed1 > EPS){
 
                 RCLCPP_WARN(this->get_logger(),
                 "Turtle1 near boundary: x=%.2f, y=%.2f and command pushes further out. Stopping.",
                 x1_, y1_);
                 make_zero(safe_cmd1);
             }
-            else {
+            else if (speed1 > EPS) {
                 RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
                                      2000,
                                      "Turtle1 near boundary (x=%.2f, y=%.2f) but command "
                                      "points inward. Allowing motion.",
                                      x1_, y1_);
             }
+            // If speed1 <= EPS (no effective command), stay quiet.
         }
 
             //Turtlle-2
@@ -229,6 +240,9 @@ private:
             (std::abs(y2_ - wall_max_) < border_threshold); */
 
         if (t2_too_close_to_boundary) {
+            double speed1 = std::fabs(last_cmd_t1_.linear.x);    // retrieve the linear cmd
+            // TODO check from sim (if the angular would be advantageous)
+            const double EPS = 1e-3;
             // check if cmd is forcing to push out more to the boundary
             bool pushing_outward =
                 ((dx_min < border_threshold) && v2x < 0.0) ||   // already left, moving further left
@@ -240,7 +254,8 @@ private:
                             "Turtle2 near boundary: x=%.2f, y=%.2f. Stopping.",
                             x2_, y2_);
                 make_zero(safe_cmd2);}
-            else {
+            else if (speed1 > EPS)  {
+                // Only log if there is a meaningful inward command
                 RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
                                     2000,
                                     "Turtle2 near boundary (x=%.2f, y=%.2f) but command "
