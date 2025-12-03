@@ -162,17 +162,17 @@ private:
                 // rv_dot < 0  -> moving closer
                 // rv_dot > 0  -> moving apart
                 if (rv_dot < 0.0) {
-                    RCLCPP_WARN(this->get_logger(),
-                                "Turtles too close: d = %.2f < %.2f. Stopping both.",
-                                d, dist_threshold_);   
+                    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                                        "Turtles too close (d=%.2f < %.2f). Stopping both.",
+                                        d, dist_threshold_);
+   
                     make_zero(safe_cmd1);
                     make_zero(safe_cmd2); 
                 }
                 else{
-                    RCLCPP_INFO_THROTTLE(this->get_logger(),
-                                        "Too close (d=%.2f), but commands move them apart "
-                                        "(rv_dot=%.3f). Allowing escape.",
-                                        d, rv_dot);
+                    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                                        "Turtles too close (d=%.2f), but commands move them apart. Allowing escape.",
+                                        d);
                 }
             }
     } 
@@ -205,9 +205,10 @@ private:
 
             if (pushing_outward && speed1 > EPS){
 
-                RCLCPP_WARN(this->get_logger(),
-                "Turtle1 near boundary: x=%.2f, y=%.2f and command pushes further out. Stopping.",
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                "Turtle1 near boundary: x=%.2f, y=%.2f. Cannot move further.",
                 x1_, y1_);
+
                 make_zero(safe_cmd1);
             }
             else if (speed1 > EPS) {
@@ -250,8 +251,8 @@ private:
                 ((dy_min < border_threshold) && v2y < 0.0) ||   // already bottom, moving further down
                 ((dy_max < border_threshold) && v2y > 0.0);     // already top, moving further up
             if (pushing_outward){
-                RCLCPP_WARN(this->get_logger(),
-                            "Turtle2 near boundary: x=%.2f, y=%.2f. Stopping.",
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                            "Turtle2 near boundary: x=%.2f, y=%.2f. Cannot move further.",
                             x2_, y2_);
                 make_zero(safe_cmd2);}
             else if (speed1 > EPS)  {
