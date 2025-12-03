@@ -171,8 +171,7 @@ private:
                 }
                 else{
                     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                                        "Turtles too close (d=%.2f), but commands move them apart. Allowing escape.",
-                                        d);
+                                        "Escaping command allowed.");
                 }
             }
     } 
@@ -214,9 +213,7 @@ private:
             else if (speed1 > EPS) {
                 RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
                                      2000,
-                                     "Turtle1 near boundary (x=%.2f, y=%.2f) but command "
-                                     "points inward. Allowing motion.",
-                                     x1_, y1_);
+                                     "Escaping command allowed for turtle1.");
             }
             // If speed1 <= EPS (no effective command), stay quiet.
         }
@@ -241,7 +238,7 @@ private:
             (std::abs(y2_ - wall_max_) < border_threshold); */
 
         if (t2_too_close_to_boundary) {
-            double speed1 = std::fabs(last_cmd_t1_.linear.x);    // retrieve the linear cmd
+            double speed1 = std::fabs(last_cmd_t2_.linear.x);    // retrieve the linear cmd
             // TODO check from sim (if the angular would be advantageous)
             const double EPS = 1e-3;
             // check if cmd is forcing to push out more to the boundary
@@ -259,9 +256,7 @@ private:
                 // Only log if there is a meaningful inward command
                 RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(),
                                     2000,
-                                    "Turtle2 near boundary (x=%.2f, y=%.2f) but command "
-                                    "points inward. Allowing motion.",
-                                    x2_, y2_);
+                                    "Escaping command allowed for turtle2.");
                 }
         }
             // Send stop command to both turtles. It is like freezing everything if unsafe
