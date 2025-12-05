@@ -19,8 +19,8 @@ class SimpleSpawner(Node):
         req.theta = 0.0
         req.name = "turtle2"
 
-        future = self.spawn_client.call_async(req)
-        future.add_done_callback(self.spawn_callback)
+        self.future = self.spawn_client.call_async(req)
+        self.future.add_done_callback(self.spawn_callback)
 
     def spawn_callback(self, future):
         try:
@@ -28,12 +28,17 @@ class SimpleSpawner(Node):
             self.get_logger().info(f"Spawned turtle: {response.name}")
         except Exception as e:
             self.get_logger().error(f"Error: {e}")
+        # Signal that we are done
+        raise SystemExit
 
 
 def main(args=None):
     rclpy.init(args=args)
     node = SimpleSpawner()
-    rclpy.spin(node)
+    try:
+        rclpy.spin(node)
+    except SystemExit:
+        pass
     node.destroy_node()
     rclpy.shutdown()
 

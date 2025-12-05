@@ -15,7 +15,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(turtlesim REQUIRED)
 find_package(std_msgs REQUIRED)
 
-add_executable(ui_node src/ui_node.cpp)
+add_executable(ui_node src/ui_node.cpp src/util.cpp)
 ament_target_dependencies(ui_node rclcpp geometry_msgs)
 add_executable(safety_node src/safety_node.cpp)
 ament_target_dependencies(safety_node rclcpp geometry_msgs turtlesim std_msgs)
