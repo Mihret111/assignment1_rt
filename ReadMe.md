@@ -11,7 +11,7 @@ graph TD
     User((User)) -->|Input| UI[UI Node]
     UI -->|/turtleX/ui_cmd_vel| Safety[Safety Node]
     Safety -->|/turtleX/cmd_vel| Sim[Turtlesim]
-    Sim -->|/turtleX/pose| Safety -->|/turtleX/pose| UI
+    Sim -->|/turtleX/pose| Safety
     Spawner[Spawner Script] -->|/spawn| Sim
 ```
 ## Component Definitions
@@ -71,7 +71,7 @@ assignment1_rt/
 ### Build Instructions
 1. To utilize the provided Makefile, navigate to the following directory 
 ```bash
-cd /assignment1_rt
+cd /assignment1_rt/
 ```
 2. Build the package:
 ```bash
@@ -83,15 +83,15 @@ make run
 ```
 
 This will:
-1. **Kill previous instances** of the simulation and nodes.
+1. **Kill previous instances**
 2. **Open Turtlesim Simulation**: In a new **tab** of your terminal (plus the graphical window).
 3. **Run Spawner**: Automatically adds the second turtle.
 4. **Open Safety Node Inspection**: In a **separate new window** to easily monitor safety actions.
 5. **Start User Interface**: In a **new tab** of your terminal, where this tab will be focused automatically.
 
 ### Using the UI
-1. The UI will ask "Which turtle do you want to control?". Enter `1` or `2`.
+1. The UI will ask **"Which turtle do you want to control?"**. Enter `1` or `2`.
 2. Enter a **Linear Velocity** (e.g., `2.0` for forward, `-1.0` for backward).
 3. Enter an **Angular Velocity** (e.g., `1.0` for left turn, `0.0` for straight).
-4. The turtle will move for 1 second, if command passes safety checks.
+4. If the command passes safety checks, the turtle will move for 1 second.
 5. Watch the Safety Node terminal for warnings if any of the turtles encounters an unsafe condition.         
