@@ -3,32 +3,33 @@
 #include <chrono>
 #include <thread>
 
-#include "rclcpp/rclcpp.hpp"              // rclcpp is the ros2 client library which includes all the commands
-#include "geometry_msgs/msg/twist.hpp"    // this is the msg type we aim to prep (cmd_vel)
+#include "rclcpp/rclcpp.hpp"              // rclcpp: ros2 client library which includes all the commands
+#include "geometry_msgs/msg/twist.hpp"    // msg to send as a candidate cmd_vel to turtles
 
+#include "util.h"
 
-class UiNode : public rclcpp::Node     // inheriting from Node makes it a node
-{          // just need to have 2 publishers and no subscribed info is needed
+class UiNode : public rclcpp::Node        // icreating a node
+{   
+    // needs 2 publishers and no subscribed info is demanded.
     
 public:    
-    // def the constructor
-    UiNode()                      // Const<- is public because we need to access it from outside                         
-    : rclcpp::Node("ui_node"),    // name of the node = ui_node
-    command_duration_(1.0)        // For how long
+    UiNode()                      // define the constructor                   
+    : rclcpp::Node("ui_node"),    // define node name
+    command_duration_(1.0)        // For how long will the command be applied
     {
+        // candidate cmd_vel publishers: publish the cmd_vel to topic ui_cmd_vel
         pub_turtle1_ = this->create_publisher<geometry_msgs::msg::Twist>(
-            "/turtle1/ui_cmd_vel", 10);       // create the first publisher (create_pub; specify_msg_type; topic_to_publish_to; que_size)
+            "/turtle1/ui_cmd_vel", 10);       // 
 
         pub_turtle2_ = this->create_publisher<geometry_msgs::msg::Twist>(
             "/turtle2/ui_cmd_vel", 10);
     }
 
-    // query user in a loop and fire the commander
-    void run()    // returns nothing just fires the fires the commander
+    // UI : to query user input in a loop and fire the commander
+    void run()    
     {
-        char chosen_turtle;     // prep a variable to hold the user input
-        double linear_vel;
-        double angular_vel;
+        char chosen_turtle;     // prepare variable to hold the user input
+
         while (rclcpp::ok())
         {
             // First user input
@@ -43,24 +44,54 @@ public:
             std::cout << "--------------------------------------\n";
             std::cout << "Your choice: ";
             std::cin >> chosen_turtle;
-             // checks is there is an error with the standard input stream
 
+            // checks is there is an error with the standard input stream
             if (!std::cin.good()) {       // ctrl+C also leads to here
-                std::cout << "Input error. Exiting application.\n";
+                std::cout << "\n\t\tInput error. Exiting application.\n";
             break;
             }
 
-            // If user wants to quit, quit    
+            // handle user preference to quit the program    
             if (chosen_turtle  == 'q' || chosen_turtle  == 'Q') {
-                std::cout << "Quitting application...\n";
+                std::cout << "\n\t\tQuitting application...\n";
             break;
             }
 
+            // handle user preference to select a turtle
             if (chosen_turtle != '1' && chosen_turtle!= '2') {
-                std::cout << "Invalid choice. Please enter a valid choise.\n";
+                std::cout << "\n\t\tInvalid choice. Please enter a valid choise.\n";
             continue;
             }
-            // Ask for linear velocity 
+
+            // ask for linear velocity 
+            double linear_vel = InquirelinearVelocity();
+
+            // ask for angular velocity 
+            double angular_vel = InquireangularVelocity();
+
+
+            std::cout << "\n\t\t✨ Command received! \n\n";
+            // logger to check the applied command  and the user choise
+            RCLCPP_INFO(this->get_logger(),
+                        "\t\tUI Node: turtle%s, linear v = %.2f, angular v=%.2f for %.1f s",
+                        (chosen_turtle == '1') ? "1" : "2",
+                        linear_vel,
+                        angular_vel,
+                        command_duration_);
+
+            // send to function publishing the velocity command to the topic ui_cmd_vel
+            send_vel_cmd(chosen_turtle, linear_vel, angular_vel, command_duration_);
+
+        }
+
+    }
+private:
+
+    double InquirelinearVelocity()
+    {
+        while (rclcpp::ok()) {
+            std::string linear_vel_str;
+            // ask for linear velocity 
             std::cout << "\n======================================\n";
             std::cout << "        🚀 Linear Velocity Input\n";
             std::cout << "======================================\n";
@@ -70,14 +101,26 @@ public:
             std::cout << "Examples:  1.0   -2.0    0\n";
             std::cout << "--------------------------------------\n";
             std::cout << "Linear velocity: ";
-            std::cin >> linear_vel;
+            std::cin >> linear_vel_str;
 
+            if (!isNumber(linear_vel_str)) {
+                std::cout << "\n\t\tInvalid linear velocity. Please enter a valid value.\n";
+            continue;
+            }
+            double linear_vel = std::stod(linear_vel_str);
             if (!std::cin.good()) {
-                std::cout << "Invalid linear velocity input. Exiting.\n";
+                std::cout << "\n\t\tInput error. Exiting application.\n";
                 break;
             }
-
-            // Ask for angular velocity 
+            return linear_vel;
+        }
+        return 0;
+    }
+    double InquireangularVelocity()
+    {
+        while (rclcpp::ok()) {
+            std::string angular_vel_str;
+            // ask for angular velocity 
             std::cout << "\n======================================\n";
             std::cout << "        🔁 Angular Velocity Input\n";
             std::cout << "======================================\n";
@@ -87,30 +130,22 @@ public:
             std::cout << "Examples:  1.0   -1.5    0\n";
             std::cout << "--------------------------------------\n";
             std::cout << "Angular velocity: ";
-            std::cin >> angular_vel;
+            std::cin >> angular_vel_str;
 
-            std::cout << "\n✨ Command received! Executing...\n\n";
 
+            if (!isNumber(angular_vel_str)) {
+                std::cout << "\n\t\tInvalid angular velocity. Please enter a valid value.\n";
+            continue;
+            }
             if (!std::cin.good()) {
-                std::cout << "Invalid input. Exiting application.\n";
+                std::cout << "\n\t\tInput error. Exiting application.\n";
             break;
             }
-
-            // Logger to check the applied command  and the user choise
-            RCLCPP_INFO(this->get_logger(),
-                        "UI: turtle%s, linear v = %.2f, angular v=%.2f for %.1f s",
-                        (chosen_turtle == '1') ? "1" : "2",
-                        linear_vel,
-                        angular_vel,
-                        command_duration_);
-
-            // call the function publishing 
-            send_vel_cmd(chosen_turtle, linear_vel, angular_vel, command_duration_);
-
+            double angular_vel = std::stod(angular_vel_str);
+            return angular_vel;
         }
-
+        return 0;
     }
-private:
 
     void send_vel_cmd(char chosen_turtle,
                                     double linear_vel, double angular_vel,
@@ -118,7 +153,8 @@ private:
     {
         geometry_msgs::msg::Twist cmd_msg;
 
-        // Set forward linear velocity, and ensure that the others are kept zero
+        // Set forward horizontal linear velocity and normal angular velocity
+        // Ensure others are kept zero
         cmd_msg.linear.x  = linear_vel;
         cmd_msg.linear.y  = 0.0;
         cmd_msg.linear.z  = 0.0;
@@ -144,10 +180,10 @@ private:
                 pub_turtle2_->publish(cmd_msg);
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));     //how often should this be done ? 100 ms approximates a 10 Hz control loop
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));     // how often should this be done ? 100 ms approximates a 10 Hz control loop
         }
 
-        // after duration time elapses, Stop the turtle 
+        // after duration_seconds elapse, send stop command 
         cmd_msg.linear.x = 0.0;
         cmd_msg.angular.z = 0.0;
 
@@ -163,15 +199,16 @@ private:
 
     }
         
-        // Declare here in the private method
-        // the two publishers 
+     // define the member variables 
+
+    // Publishers: candidate velocity commands 
         rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_turtle1_;
         rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_turtle2_;
         // 
-        double command_duration_; // seconds
+        double command_duration_; // apply cmd for this duration
 };
 
-// Add main
+// Instantiate ui_node 
 int main(int argc, char * argv[])
 {
     // Initialise ROS2 with the necessary args
