@@ -28,7 +28,7 @@ public:
     // UI : to query user input in a loop and fire the commander
     void run()    
     {
-        char chosen_turtle;     // prepare variable to hold the user input
+        std::string chosen_turtle;     // prepare variable to hold the user input
 
         while (rclcpp::ok())
         {
@@ -52,13 +52,13 @@ public:
             }
 
             // handle user preference to quit the program    
-            if (chosen_turtle  == 'q' || chosen_turtle  == 'Q') {
+            if (chosen_turtle  == "q" || chosen_turtle  == "Q") {
                 std::cout << "\n\t\tQuitting application...\n";
             break;
             }
 
             // handle user preference to select a turtle
-            if (chosen_turtle != '1' && chosen_turtle!= '2') {
+            if (chosen_turtle != "1" && chosen_turtle!= "2") {
                 std::cout << "\n\t\tInvalid choice. Please enter a valid choise.\n";
             continue;
             }
@@ -74,7 +74,7 @@ public:
             // logger to check the applied command  and the user choise
             RCLCPP_INFO(this->get_logger(),
                         "\t\tUI Node: turtle%s, linear v = %.2f, angular v=%.2f for %.1f s",
-                        (chosen_turtle == '1') ? "1" : "2",
+                        (chosen_turtle == "1") ? "1" : "2",
                         linear_vel,
                         angular_vel,
                         command_duration_);
@@ -147,7 +147,7 @@ private:
         return 0;
     }
 
-    void send_vel_cmd(char chosen_turtle,
+    void send_vel_cmd(std::string chosen_turtle,
                                     double linear_vel, double angular_vel,
                                     double duration_seconds)
     {
@@ -174,9 +174,9 @@ private:
             }
 
             // Until the duration time elapses, publish by using the appropriate publisher depending on user choice
-            if (chosen_turtle == '1') {
+            if (chosen_turtle == "1") {
                 pub_turtle1_->publish(cmd_msg);
-            } else if (chosen_turtle == '2') {
+            } else if (chosen_turtle == "2") {
                 pub_turtle2_->publish(cmd_msg);
             }
 
@@ -187,15 +187,15 @@ private:
         cmd_msg.linear.x = 0.0;
         cmd_msg.angular.z = 0.0;
 
-        if (chosen_turtle == '1') {
+        if (chosen_turtle == "1") {
             pub_turtle1_->publish(cmd_msg);
-        } else if (chosen_turtle == '2') {
+        } else if (chosen_turtle == "2") {
             pub_turtle2_->publish(cmd_msg);
         }
 
         RCLCPP_INFO(this->get_logger(),
                     "1 sec command finished. Turtle%s stopped.",
-                    (chosen_turtle == '1') ? "1" : "2");
+                    (chosen_turtle == "1") ? "1" : "2");
 
     }
         
