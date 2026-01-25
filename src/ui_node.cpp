@@ -12,6 +12,7 @@ class UiNode : public rclcpp::Node        // icreating a node
 {   
     // needs 2 publishers and no subscribed info is demanded.
     
+#include "turtlesim/srv/spawn.hpp"        // msg to spawn a new turtle
 public:    
     UiNode()                      // define the constructor                   
     : rclcpp::Node("ui_node"),    // define node name
@@ -23,6 +24,9 @@ public:
 
         pub_turtle2_ = this->create_publisher<geometry_msgs::msg::Twist>(
             "/turtle2/ui_cmd_vel", 10);
+
+        pub_turtle3_ = this->create_publisher<geometry_msgs::msg::Twist>(
+            "/turtle3/ui_cmd_vel", 10);
     }
 
     // UI : to query user input in a loop and fire the commander
@@ -40,6 +44,7 @@ public:
             std::cout << "Which turtle do you want to control?\n";
             std::cout << "  ➤ Enter '1' for Turtle 1\n";
             std::cout << "  ➤ Enter '2' for Turtle 2\n";
+            std::cout << "  ➤ Enter '3' for Turtle 3\n";
             std::cout << "  ➤ Enter 'q' to quit\n";
             std::cout << "--------------------------------------\n";
             std::cout << "Your choice: ";
@@ -58,7 +63,7 @@ public:
             }
 
             // handle user preference to select a turtle
-            if (chosen_turtle != "1" && chosen_turtle!= "2") {
+            if (chosen_turtle != "1" && chosen_turtle!= "2" && chosen_turtle!= "3") {
                 std::cout << "\n\t\tInvalid choice. Please enter a valid choise.\n";
             continue;
             }
@@ -74,7 +79,7 @@ public:
             // logger to check the applied command  and the user choise
             RCLCPP_INFO(this->get_logger(),
                         "\t\tUI Node: turtle%s, linear v = %.2f, angular v=%.2f for %.1f s",
-                        (chosen_turtle == "1") ? "1" : "2",
+                        (chosen_turtle == "1") ? "1" : "2" : "3",
                         linear_vel,
                         angular_vel,
                         command_duration_);
@@ -178,6 +183,8 @@ private:
                 pub_turtle1_->publish(cmd_msg);
             } else if (chosen_turtle == "2") {
                 pub_turtle2_->publish(cmd_msg);
+            } else if (chosen_turtle == "3") {
+                pub_turtle3_->publish(cmd_msg);
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(200));     // how often should this be done ? 100 ms approximates a 10 Hz control loop
@@ -191,11 +198,13 @@ private:
             pub_turtle1_->publish(cmd_msg);
         } else if (chosen_turtle == "2") {
             pub_turtle2_->publish(cmd_msg);
+        } else if (chosen_turtle == "3") {
+            pub_turtle3_->publish(cmd_msg);
         }
 
         RCLCPP_INFO(this->get_logger(),
                     "1 sec command finished. Turtle%s stopped.",
-                    (chosen_turtle == "1") ? "1" : "2");
+                    (chosen_turtle == "1") ? "1" : "2" : "3");
 
     }
         
@@ -204,7 +213,7 @@ private:
     // Publishers: candidate velocity commands 
         rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_turtle1_;
         rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_turtle2_;
-        // 
+        rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_turtle3_;
         double command_duration_; // apply cmd for this duration
 };
 

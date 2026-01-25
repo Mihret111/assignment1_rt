@@ -4,7 +4,7 @@
 #include "turtlesim/msg/pose.hpp"         // msg to retrieve pose of each from
 #include "geometry_msgs/msg/twist.hpp"    // msg to stop each incase of dangerous condition
 #include "std_msgs/msg/float32.hpp"       // msg to send the distance value   (used just for logging purpose)
-
+#include "std_msgs/msg/float64_multi_array.hpp"    // array of double values to send the 
 
 using std::placeholders::_1;              // Needed for std::bind to connect callbacks to subscribers/timers
 
@@ -35,6 +35,13 @@ public:
             "/turtle2/pose",
             10,
             std::bind(&SafetyNode::pose2_callback, this, _1)
+        );
+
+
+        sub_t3_pose_ = this->create_subscription<turtlesim::msg::Pose>(
+            "/turtle3/pose",
+            10,
+            std::bind(&SafetyNode::pose3_callback, this, _1)
         );
 
         // UI command subscribers: listen and store user-desired commands from UiNode
@@ -86,6 +93,14 @@ private:
         //retrieve the heading angle theta: associate in safety decisions
         theta2_ = msg-> theta;
     }
+        // Pose of turtle2
+    void pose3_callback(const turtlesim::msg::Pose::SharedPtr msg)
+    {
+        x3_ = msg->x;
+        y3_ = msg->y;
+        //retrieve the heading angle theta: associate in safety decisions
+        theta3_ = msg-> theta;
+    }
 
     // UI command callbacks 
     void ui_cmd1_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
@@ -107,6 +122,17 @@ private:
             // nothing to send to the tutles
             return;
         }
+
+        if (have_pose3_) {
+            double dx13 = x1_ - x3_;
+            double dy13 = y1_ - y3_;
+            double d13  = std::sqrt(dx13*dx13 + dy13*dy13);
+
+            std_msgs::msg::Float32 d13_msg;
+            d13_msg.data = static_cast<float>(d13);
+            pub_distance_13_->publish(d13_msg);
+        }
+
         // Compute distance between turtles
         double dx = x1_ - x2_;
         double dy = y1_ - y2_;
@@ -168,7 +194,7 @@ private:
                                         "Escaping command allowed.");
                 }
             }
-    } 
+        } 
         // Safety against boundary check
             // how close to the safe [wall_min_, wall_max_] boundary for either x or y.
         
@@ -230,6 +256,8 @@ private:
                                     "Escaping command allowed for turtle2.");
                 }
         }
+
+        // Publish the safe commands to turtles
             // Send stop command to both turtles. Freezing if unsafe
             // Publish final safe commands to turtles
             if (have_cmd1_) {
@@ -248,7 +276,9 @@ private:
     rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr sub_t2_pose_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_t1_ui_cmd_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_t2_ui_cmd_;
-
+    rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr sub_t3_pose_;
+    double x3_{0.0}, y3_{0.0}, theta3_{0.0};
+    bool have_pose3_{false};
 
     // Publishers: overriding velocity commands to stop the robots
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_distance_;    // distance information for loggin
@@ -261,12 +291,15 @@ private:
     // Stored pose information
     double x1_, y1_, theta1_;
     double x2_, y2_, theta2_;
+    double x3_, y3_, theta3_;
 
     // Last desired commands from UI
     geometry_msgs::msg::Twist last_cmd_t1_;
     geometry_msgs::msg::Twist last_cmd_t2_;
+    geometry_msgs::msg::Twist last_cmd_t3_;
     bool have_cmd1_;
     bool have_cmd2_;
+    bool have_cmd3_;
 
     // Safety parameters 
     double dist_threshold_;   // minimum allowed distance between turtles
