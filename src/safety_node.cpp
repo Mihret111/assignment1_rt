@@ -4,7 +4,7 @@
 #include "turtlesim/msg/pose.hpp"         // msg to retrieve pose of each from
 #include "geometry_msgs/msg/twist.hpp"    // msg to stop each incase of dangerous condition
 #include "std_msgs/msg/float32.hpp"       // msg to send the distance value   (used just for logging purpose)
-
+#include "assignment1_rt_msgs/msg/VelocityInfo.hpp"
 
 using std::placeholders::_1;              // Needed for std::bind to connect callbacks to subscribers/timers
 
@@ -52,6 +52,15 @@ public:
         pub_distance_ = this->create_publisher<std_msgs::msg::Float32>(
             "/turtles_distance",
             10
+        );
+
+        // publish the velocity information of turtles 
+        // separate topics used for each turtles
+        pub_velinfo1_ = this->create_publisher<assignment1_rt_msgs::msg::VelocityInfo>(
+            "turtle1/velocity_info", 10
+        );
+        pub_velinfo2_ = this->create_publisher<assignment1_rt_msgs::msg::VelocityInfo>(
+            "turtle2/velocity_info", 10
         );
 
         // cmd_vel publishers: publish the cmd_vel to turtlesim ( the only visible one to turtlesim)
@@ -238,6 +247,22 @@ private:
             if (have_cmd2_) {
                 pub_t2_cmd_->publish(safe_cmd2);
             }
+
+            // Publish velocity information of tuurtle_1
+            assignment1_rt_msgs::msg::VelocityInfo info1;
+            info1.label = "velocity";
+            info1.linear_x = safe_cmd1.linear.x;      // printing for the velocity of turtle1 
+            info1.angular_z = safe_cmd1.angular.z;
+
+            pub_velinfo1_->publish(info1);
+
+            // Publish velocity information of tuurtle_2
+            assignment1_rt_msgs::msg::VelocityInfo info2;
+            info2.label = "velocity";
+            info2.linear_x = safe_cmd2.linear.x;      // printing for the velocity of turtle2
+            info2.angular_z = safe_cmd2.angular.z;
+
+            pub_velinfo2_->publish(info2);
         
     }
 
@@ -254,6 +279,10 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_distance_;    // distance information for loggin
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_t1_cmd_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_t2_cmd_;
+
+    // Publisher: velocity information for logging 
+    rclcpp::Publisher<assignment1_rt_msgs::msg::VelocityInfo>::SharedPtr pub_velinfo1_;
+    rclcpp::Publisher<assignment1_rt_msgs::msg::VelocityInfo>::SharedPtr pub_velinfo2_;
 
     // Timer for periodic safety checks (how often safety distances are calculated)
     rclcpp::TimerBase::SharedPtr timer_;
